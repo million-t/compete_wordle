@@ -7,7 +7,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from collections import defaultdict
-from api.services.wordle_services import process_word_guess
+from api.services.wordle_services import process_word_guess, increment_score
+
 
 # Create your views here.
 class WordViewSet(viewsets.ModelViewSet):
@@ -66,15 +67,19 @@ class ContestViewSet(viewsets.ModelViewSet):
 
         try:
             response = process_word_guess(guess_text, word)
-            if response["correct"]:
-                # increment score
-                return Response(response, status=status.HTTP_200_OK)
-            return Response(response, status=status.HTTP_200_OK)
-            
         except Word.DoesNotExist:
             return Response({'error': 'Word does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
-        return Response({"guess_text":guess_text}, status=status.HTTP_200_OK)
+
+        try:
+            if response["correct"]:
+                score_recorded = increment_score(participant, word)
+                return Response(response, status=status.HTTP_200_OK)
+            return Response(response, status=status.HTTP_200_OK)
+        except:
+            return Response({"error": "Couldn't update score."}, status=status.HTTP_400_BAD_REQUEST)
+        
+
 
 class GuessViewSet(viewsets.ModelViewSet):
     queryset = Guess.objects.all()

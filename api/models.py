@@ -23,6 +23,7 @@ class Word(models.Model):
     contest = models.ForeignKey(Contest, on_delete=models.CASCADE)
     word_position = models.CharField(max_length=2)
     created_at = models.DateTimeField(auto_now_add=True)
+    weight = models.IntegerField(default=1)
 
     def __str__(self):
         return f"Target word: {self.word_text}"
