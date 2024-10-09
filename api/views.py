@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from collections import defaultdict
+from api.services.wordle_services import process_word_guess
 
 # Create your views here.
 class WordViewSet(viewsets.ModelViewSet):
@@ -64,63 +65,16 @@ class ContestViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Guess must be a 5-letter word'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
+            response = process_word_guess(guess_text, word)
+            if response["correct"]:
+                # increment score
+                return Response(response, status=status.HTTP_200_OK)
+            return Response(response, status=status.HTTP_200_OK)
             
-            target_word = Word.objects.get(pk=int(word)).word_text
-            
-            guess_list = list(guess_text)
-            target_list = list(target_word)
-            
-            word_len = len(target_word)
-            res = [0]*word_len
-            perfect_count = 0
-
-            for i in range(word_len):
-                if guess_list[i] == target_list[i]:
-                    guess_list[i] = "$"
-                    target_list[i] = "#"
-                    res[i] = 2
-                    perfect_count += 1
-
-            if perfect_count == word_len:
-                
-                # complete word guess logic
-
-
-                return Response({'message':'Correctly guessed!', 'data': res}, status=status.HTTP_200_OK)
-
-            count = defaultdict(int)
-            for char in target_list:
-                if char != '#':
-                    count[char] += 1
-            
-            for i, char in enumerate(guess_list):
-                if guess_list[i] != '$' and count[char]:
-                    count[char] -= 1
-                    res[i] = 1
-            
-            
-            return Response({'message':'Guess evaluated.', 'data': res}, status=status.HTTP_200_OK)
-            
-        except:
+        except Word.DoesNotExist:
             return Response({'error': 'Word does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
         return Response({"guess_text":guess_text}, status=status.HTTP_200_OK)
-
-        # if len(guess_word) != 5:
-        #     return Response({'error': 'Guess must be a 5-letter word'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # is_correct = guess_word == round_instance.word_to_guess.lower()
-
-        # guess = Guess.objects.create(
-        #     user_id = request.user,
-            
-        # )
-
-        # if is_correct:
-        #     return Response({'message': 'Correct guess!', 'data': GuessSerializer(guess).data}, status=status.HTTP_200_OK)
-        # else:
-        #     return Response({'message': 'Incorrect guess', 'data': GuessSerializer(guess).data}, status=status.HTTP_200_OK)
-
 
 class GuessViewSet(viewsets.ModelViewSet):
     queryset = Guess.objects.all()

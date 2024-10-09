@@ -8,6 +8,7 @@ class Contest(models.Model):
     end_time = models.DateTimeField()
     participants = models.ManyToManyField(User, through="ContestParticipant", related_name='participated_contests')
 
+
     class Meta:
         indexes = [
             models.Index(fields=['start_time', 'end_time']),
@@ -25,7 +26,6 @@ class Word(models.Model):
 
     def __str__(self):
         return f"Target word: {self.word_text}"
-
 
 class Guess(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
