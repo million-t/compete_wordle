@@ -58,7 +58,6 @@ class ContestViewSet(viewsets.ModelViewSet):
             user = request.user
             contest = pk
 
-
         except:
             return Response({'error': 'No enough data provided in the request.'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -70,7 +69,6 @@ class ContestViewSet(viewsets.ModelViewSet):
         except Word.DoesNotExist:
             return Response({'error': 'Word does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
-
         try:
             if response["correct"]:
                 score_recorded = increment_score(participant, word)
@@ -79,6 +77,7 @@ class ContestViewSet(viewsets.ModelViewSet):
         except:
             return Response({"error": "Couldn't update score."}, status=status.HTTP_400_BAD_REQUEST)
         
+
 
 
 class GuessViewSet(viewsets.ModelViewSet):
