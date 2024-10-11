@@ -7,8 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from collections import defaultdict
-from api.services.wordle_services import process_word_guess, increment_score
-
+from api.services.wordle_services import process_word_guess, increment_score, register_participant, get_standings
 
 # Create your views here.
 class WordViewSet(viewsets.ModelViewSet):
@@ -33,12 +32,11 @@ class ContestViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def join(self, request, pk=None):
-        contest = self.get_object()
-        user = request.user
-        contest.participants.add(user)
-        return Response({"status": "You have successfuly joined the contest!"})
-
-    
+        try:
+            participant = register_participant(pk, request.user)
+            return Response({"status": "You have successfuly joined the contest!"}, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=True, methods=['post'], url_path='submit_guess')
     def submit_guess(self, request, pk=None):
@@ -76,7 +74,11 @@ class ContestViewSet(viewsets.ModelViewSet):
             return Response(response, status=status.HTTP_200_OK)
         except:
             return Response({"error": "Couldn't update score."}, status=status.HTTP_400_BAD_REQUEST)
-        
+    
+    @action(detail=True, methods=['get'], url_path='standings')
+    def get_standings(self, request, pk=None):
+        # todo
+        return Response({'error': 'Not implemented yet'}, status=status.HTTP_501_NOT_IMPLEMENTED)
 
 
 
