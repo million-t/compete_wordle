@@ -69,8 +69,7 @@ class ContestViewSet(viewsets.ModelViewSet):
 
         try:
             if response["correct"]:
-                score_recorded = increment_score(participant, word)
-                return Response(response, status=status.HTTP_200_OK)
+                score_recorded = increment_score(user, word)
             return Response(response, status=status.HTTP_200_OK)
         except:
             return Response({"error": "Couldn't update score."}, status=status.HTTP_400_BAD_REQUEST)
