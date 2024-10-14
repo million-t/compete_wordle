@@ -103,7 +103,6 @@ class ContestViewSet(viewsets.ModelViewSet):
             return Response({'error': "Couldn't get words"}, status=status.HTTP_400_BAD_REQUEST)
         return Response(words, status=status.HTTP_200_OK)
 
-
 class GuessViewSet(viewsets.ModelViewSet):
     queryset = Guess.objects.all()
     serializer_class = GuessSerializer

@@ -5,7 +5,7 @@ def evaluate_guess(guess_text, target_word):
     target_list = list(target_word)
     
     word_len = len(target_word)
-    result = [0]*word_len
+    result = [1]*word_len
     perfect_count = 0
 
     for i in range(word_len):
@@ -13,7 +13,7 @@ def evaluate_guess(guess_text, target_word):
             target_list[i] = "#"
             guess_list[i] = "$"
             perfect_count += 1
-            result[i] = 2
+            result[i] = 3
 
     correct = perfect_count == word_len
 
@@ -25,7 +25,7 @@ def evaluate_guess(guess_text, target_word):
     for i, char in enumerate(guess_list):
         if guess_list[i] != '$' and count[char]:
             count[char] -= 1
-            result[i] = 1
+            result[i] = 2
 
     response = {
         "message": "Guess evaluated.",
