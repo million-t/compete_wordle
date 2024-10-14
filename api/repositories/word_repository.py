@@ -12,3 +12,9 @@ def get_word_weight_by_id(word_id):
     except Word.DoesNotExist:
         return None
 
+def get_words_by_contest_id(contest_id):
+    try:
+        return Word.objects.filter(contest=contest_id)
+    
+    except Word.DoesNotExist:
+        return None
