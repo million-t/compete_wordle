@@ -16,7 +16,6 @@ def evaluate_guess(guess_text, target_word):
             result[i] = 3
 
     correct = perfect_count == word_len
-
     count = defaultdict(int)
     for char in target_list:
         if char != '#':
