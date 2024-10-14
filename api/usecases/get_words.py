@@ -8,5 +8,4 @@ def get_words_usecase(contest_id):
         raise ValueError("Encountered an error getting words.")
     
     words = WordSerializer(words, many=True).data
-
     return words

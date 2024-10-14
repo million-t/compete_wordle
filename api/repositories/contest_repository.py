@@ -8,3 +8,7 @@ def get_contest_by_id(contest_id):
 
 def create_contest(validated_data):
     return Contest.objects.create(**validated_data)
+
+def get_my_contests(user):
+    res = Contest.objects.filter(creator=user)
+    return res

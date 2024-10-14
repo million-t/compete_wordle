@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from collections import defaultdict
-from api.services.wordle_services import process_word_guess, increment_score, register_participant, get_standings, get_words
+from api.services.wordle_services import process_word_guess, increment_score, register_participant, get_standings, get_words, get_my_contests
 
 # Create your views here.
 class WordViewSet(viewsets.ModelViewSet):
@@ -29,6 +29,17 @@ class ContestViewSet(viewsets.ModelViewSet):
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @action(detail=False, methods=['get'], url_path='my')
+    def get_my(self, request):
+        try:
+            user = request.user
+            contests = get_my_contests(user)
+            return Response(contests, status=status.HTTP_200_OK)
+        except:
+            return Response({'error': "Couldn't get contests"}, status=status.HTTP_400_BAD_REQUEST)
+
+        
 
     @action(detail=True, methods=['post'])
     def join(self, request, pk=None):
