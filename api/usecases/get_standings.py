@@ -15,7 +15,6 @@ def get_standings_usecase(contest_id, page, page_size):
         for index, participant in enumerate(paginated_participants)
     ]
 
-
     return {
         'standings': standings,
         'page': paginated_participants.number,

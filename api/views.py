@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from collections import defaultdict
-from api.services.wordle_services import process_word_guess, increment_score, register_participant, get_standings, get_words, get_my_contests
+from api.services.wordle_services import process_word_guess, increment_score, register_participant, get_standings, get_words, get_my_contests, get_contest_word_guesses
 
 # Create your views here.
 class WordViewSet(viewsets.ModelViewSet):
@@ -39,7 +39,18 @@ class ContestViewSet(viewsets.ModelViewSet):
         except:
             return Response({'error': "Couldn't get contests"}, status=status.HTTP_400_BAD_REQUEST)
 
-        
+    @action(detail=True, methods=['get'], url_path='get_word_guesses')
+    def get_word_guesses(self, request, pk=None):
+        try:
+            user = request.user
+            word_id = request.query_params.get('word_id', None)
+            if word_id is None:
+                return Response({'error': 'word_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            guesses = get_contest_word_guesses(pk, user.id, word_id)
+            return Response(guesses, status=status.HTTP_200_OK)
+        except:
+            return Response({'error': "Couldn't get word guesses"}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['post'])
     def join(self, request, pk=None):
@@ -66,7 +77,7 @@ class ContestViewSet(viewsets.ModelViewSet):
             word = request.data.get('word_id', '')
             user = request.user
             contest = pk
-
+            
         except:
             return Response({'error': 'No enough data provided in the request.'}, status=status.HTTP_400_BAD_REQUEST)
         
