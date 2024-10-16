@@ -6,8 +6,8 @@ from api.usecases.get_words import get_words_usecase
 from api.usecases.get_my_contests import get_my_contests_usecase
 from api.usecases.get_contest_word_guesses import get_contest_word_guesses_usecase
 
-def process_word_guess(guess_text, word_id):
-    return process_word_guess_usecase(guess_text, word_id)
+def process_word_guess(guess_text, word_id, contest_id, user_id):
+    return process_word_guess_usecase(guess_text, word_id, contest_id, user_id)
 
 def increment_score(participant, word_id):
     return increment_score_usecase(participant, word_id)

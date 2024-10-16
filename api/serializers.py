@@ -14,7 +14,7 @@ class ContestSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class GuessSerializer(serializers.ModelSerializer):
-    guess = serializers.CharField(max_length=5)
+    guess_text = serializers.CharField(max_length=5)
     class Meta:
         model = Guess
         fields = '__all__'

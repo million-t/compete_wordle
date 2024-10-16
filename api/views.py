@@ -44,10 +44,12 @@ class ContestViewSet(viewsets.ModelViewSet):
         try:
             user = request.user
             word_id = request.query_params.get('word_id', None)
+            
             if word_id is None:
                 return Response({'error': 'word_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
             
             guesses = get_contest_word_guesses(pk, user.id, word_id)
+            print('here =========')
             return Response(guesses, status=status.HTTP_200_OK)
         except:
             return Response({'error': "Couldn't get word guesses"}, status=status.HTTP_400_BAD_REQUEST)
@@ -64,6 +66,7 @@ class ContestViewSet(viewsets.ModelViewSet):
     def submit_guess(self, request, pk=None):
         try:
             contest_instance = Contest.objects.get(pk=pk)
+            
         except Contest.DoesNotExist:
             return Response({'error': 'Contest does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -75,7 +78,7 @@ class ContestViewSet(viewsets.ModelViewSet):
             guess_text = request.data.get('guess_text', '').lower()
             word_position = request.data.get('word_position', '').upper()
             word = request.data.get('word_id', '')
-            user = request.user
+            user = request.user.id
             contest = pk
             
         except:
@@ -85,7 +88,7 @@ class ContestViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Guess must be a 5-letter word'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            response = process_word_guess(guess_text, word)
+            response = process_word_guess(guess_text, word, contest, user)
         except Word.DoesNotExist:
             return Response({'error': 'Word does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
