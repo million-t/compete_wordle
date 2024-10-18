@@ -49,7 +49,7 @@ class ContestViewSet(viewsets.ModelViewSet):
                 return Response({'error': 'word_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
             
             guesses = get_contest_word_guesses(pk, user.id, word_id)
-            print('here =========')
+            
             return Response(guesses, status=status.HTTP_200_OK)
         except:
             return Response({'error': "Couldn't get word guesses"}, status=status.HTTP_400_BAD_REQUEST)
