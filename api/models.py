@@ -8,7 +8,6 @@ class Contest(models.Model):
     end_time = models.DateTimeField()
     participants = models.ManyToManyField(User, through="ContestParticipant", related_name='participated_contests')
 
-
     class Meta:
         indexes = [
             models.Index(fields=['start_time', 'end_time']),
@@ -16,7 +15,6 @@ class Contest(models.Model):
 
     def __str__(self):
         return self.title
-
 
 class Word(models.Model):
     word_text = models.CharField(max_length=5)

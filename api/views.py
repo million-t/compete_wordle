@@ -8,8 +8,11 @@ from rest_framework.response import Response
 from django.utils import timezone
 from collections import defaultdict
 from api.services.wordle_services import process_word_guess, increment_score, register_participant, get_standings, get_words, get_my_contests, get_contest_word_guesses
+from channels.layers import get_channel_layer
+from django.conf import settings
+from asgiref.sync import async_to_sync
+from api.usecases.get_standings import get_standings_usecase
 
-# Create your views here.
 class WordViewSet(viewsets.ModelViewSet):
     queryset = Word.objects.all()
     serializer_class = WordSerializer
@@ -21,15 +24,18 @@ class ContestViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
 
-        data = request.data
-        data['creator'] = request.user.id
-        serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        try:
+            data = request.data
+            data['creator'] = request.user.id
+            serializer = self.get_serializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
 
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+        except:
+            return Response({'error': "Couldn't create contest"}, status=status.HTTP_400_BAD_REQUEST)
     @action(detail=False, methods=['get'], url_path='my')
     def get_my(self, request):
         try:
@@ -95,6 +101,17 @@ class ContestViewSet(viewsets.ModelViewSet):
         try:
             if response["correct"]:
                 score_recorded = increment_score(user, word)
+                channel_layer = get_channel_layer()
+                if channel_layer is None:
+                    return Response({'error': "Channel layer is not configured"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                standings = get_standings(contest, 1, 50)
+                async_to_sync(channel_layer.group_send)(
+                    f'standings_{contest}',
+                    {
+                        'type': 'send_standings',
+                        'standings': standings
+                    }
+                )
             return Response(response, status=status.HTTP_200_OK)
         except:
             return Response({"error": "Couldn't update score."}, status=status.HTTP_400_BAD_REQUEST)
@@ -102,11 +119,27 @@ class ContestViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'], url_path='standings')
     def standings(self, request, pk=None):
         try:
+            
             page_number = request.query_params.get('page', 1)
             page_size = request.query_params.get('page_size', 50)
-            standings = get_standings(pk, page_number, page_size)
+            
+            standings = get_standings_usecase(pk, page_number, page_size)
+            channel_layer = get_channel_layer()
+            if channel_layer is None:
+                return Response({'error': "Channel layer is not configured"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            async_to_sync(channel_layer.group_send)(
+                f'standings_{pk}',
+                {
+                    'type': 'send_standings',
+                    'standings': standings
+                }
+            )
+            print('Message sent to WebSocket group')
+
             return Response(standings, status=status.HTTP_200_OK)
-        except:
+        except Exception as e:
+            print(f'Error: {e}')
             return Response({'error': "Couldn't get standings"}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['get'], url_path='words')    
