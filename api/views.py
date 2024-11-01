@@ -172,3 +172,9 @@ class ContestParticipantViewSet(viewsets.ModelViewSet):
     queryset = ContestParticipant.objects.all()
     serializer_class = ContestParticipantSerializer
 
+
+# class TrieViewSet(viewsets.ModelViewSet):
+#     def get(self, request):
+
+#         popu
+        
