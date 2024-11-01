@@ -1,5 +1,8 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
+
 
 class Contest(models.Model):
     title = models.CharField(max_length=100)
@@ -7,6 +10,25 @@ class Contest(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     participants = models.ManyToManyField(User, through="ContestParticipant", related_name='participated_contests')
+    contest_type = models.CharField(
+        max_length=10,
+        choices=[
+            ('DAILY', 'Daily'),
+            ('CONTEST', 'Contest')
+        ],
+        default='CONTEST'
+    )
+    contest_availability = models.CharField(
+        max_length=10,
+        choices=[
+            ('PRIVATE', 'Private'),
+            ('PUBLIC', 'Public')
+        ],
+        default='PUBLIC'
+    )
+    description = models.TextField(default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
 
     class Meta:
         indexes = [
@@ -15,6 +37,13 @@ class Contest(models.Model):
 
     def __str__(self):
         return self.title
+
+class InvitationCode(models.Model):
+    contest = models.OneToOneField(Contest, on_delete=models.CASCADE)
+    code = models.CharField(max_length=36, unique=True, default=uuid.uuid4)
+
+    def __str__(self):
+        return self.code
 
 class Word(models.Model):
     word_text = models.CharField(max_length=5)

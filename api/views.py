@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets, status
-from .models import Word, Contest, Guess, ContestParticipant
-from .serializers import WordSerializer, ContestSerializer, GuessSerializer, ContestParticipantSerializer
+from .models import Word, Contest, Guess, ContestParticipant, InvitationCode
+from .serializers import WordSerializer, ContestSerializer, GuessSerializer, ContestParticipantSerializer, InvitationCodeSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -25,6 +25,7 @@ class ContestViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
 
         try:
+
             data = request.data
             data['creator'] = request.user.id
             serializer = self.get_serializer(data=data)
@@ -32,7 +33,20 @@ class ContestViewSet(viewsets.ModelViewSet):
             self.perform_create(serializer)
 
             headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            if data['contest_availability'] == 'PRIVATE':
+                invitation_code = InvitationCode.objects.create(contest=serializer.instance)
+                invitation_code_serializer = InvitationCodeSerializer(invitation_code)
+
+                return Response(
+                    {
+                        'contest': serializer.data,
+                        'invitation_code': invitation_code_serializer.data
+                    },
+                    status=status.HTTP_201_CREATED,
+                    headers=headers
+                )
+            else:
+                return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
         except:
             return Response({'error': "Couldn't create contest"}, status=status.HTTP_400_BAD_REQUEST)
