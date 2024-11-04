@@ -12,6 +12,8 @@ from channels.layers import get_channel_layer
 from django.conf import settings
 from asgiref.sync import async_to_sync
 from api.usecases.get_standings import get_standings_usecase
+from api.utils.word_check import is_valid_word
+
 
 class WordViewSet(viewsets.ModelViewSet):
     queryset = Word.objects.all()
@@ -23,9 +25,7 @@ class ContestViewSet(viewsets.ModelViewSet):
     permission_classes = [ IsAuthenticated ]
 
     def create(self, request, *args, **kwargs):
-
         try:
-
             data = request.data
             data['creator'] = request.user.id
             serializer = self.get_serializer(data=data)
@@ -95,7 +95,7 @@ class ContestViewSet(viewsets.ModelViewSet):
         #     return Response({'error': 'Contest is not active'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            guess_text = request.data.get('guess_text', '').lower()
+            guess_text = request.data.get('guess_text', '').upper()
             word_position = request.data.get('word_position', '').upper()
             word = request.data.get('word_id', '')
             user = request.user.id
@@ -111,6 +111,9 @@ class ContestViewSet(viewsets.ModelViewSet):
             response = process_word_guess(guess_text, word, contest, user)
         except Word.DoesNotExist:
             return Response({'error': 'Word does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not is_valid_word(guess_text):
+            return Response({'error': "I'm sorry, I don't know this word."}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             if response["correct"]:
