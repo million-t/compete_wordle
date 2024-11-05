@@ -1,4 +1,9 @@
-# 🎉 Django Wordle Competition 🎉
+# <img width=20 height=20 src="images/logo-icon.png" alt="Project Logo" /> Vocab Wars - Backend API <img width=20 height=20 src="images/logo-icon.png" alt="Project Logo" />
+
+<div style="text-align: center;">
+  <img src="images/logo.png" alt="Vocab Wars Logo" style="display: block; margin: 0 auto; width: 256px; height: auto;" />
+</div>
+
 
 This is a Django-based api for managing and participating in Wordle competitions. The application includes features such as user authentication, real-time standings, and integration with a Redis server for caching and WebSocket communication.
 
