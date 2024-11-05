@@ -1,21 +1,20 @@
-version: '3.8'
-
 services:
-  db:
-    image: postgres:latest
-    container_name: postgres
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "5432:5432"
+  web:
+    build: .
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=${DEBUG}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - REDIS_URL=${REDIS_URL}
     networks:
       - djangonetwork
-    env_file:
-      - .env
 
   redis:
     image: redis:latest
@@ -24,26 +23,7 @@ services:
       - "6379:6379"
     networks:
       - djangonetwork
-    env_file:
-      - .env
 
-  web:
-    build: .
-    command: ["bash", "-c", "until nc -z db 5432; do echo 'Waiting for database...'; sleep 1; done && python manage.py migrate && python manage.py collectstatic --noinput && daphne -b 0.0.0.0 -p 8000 compete_wordle.asgi:application"]
-    volumes:
-      - .:/app
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-      - redis
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
-    networks:
-      - djangonetwork
-    env_file:
-      - .env
 volumes:
   postgres_data:
 
