@@ -28,6 +28,20 @@ class ContestViewSet(viewsets.ModelViewSet):
         try:
             data = request.data
             data['creator'] = request.user.id
+            title = data['title']
+            description = data['description']
+            start_time = data['start_time']
+            duration = data['duration']
+            contest_availability = data['contest_availability']
+            words = data['words']
+            
+
+
+            # word_objects = [Word(word=word) for word in words]
+            # Word.objects.bulk_create(word_objects)
+
+            print(words, data['creator'])
+            return Response( status=status.HTTP_201_CREATED, headers=headers)
             serializer = self.get_serializer(data=data)
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
@@ -175,9 +189,3 @@ class ContestParticipantViewSet(viewsets.ModelViewSet):
     queryset = ContestParticipant.objects.all()
     serializer_class = ContestParticipantSerializer
 
-
-# class TrieViewSet(viewsets.ModelViewSet):
-#     def get(self, request):
-
-#         popu
-        
