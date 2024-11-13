@@ -18,5 +18,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Command to wait for db, migrate, collect static files, and run the application
-CMD bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py collectstatic --noinput && daphne -b 0.0.0.0 -p 8000 compete_wordle.asgi:application"
+CMD bash -c "python manage.py migrate && python manage.py collectstatic --noinput && daphne -b 0.0.0.0 -p 8000 compete_wordle.asgi:application"
 

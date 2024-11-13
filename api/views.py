@@ -37,9 +37,6 @@ class ContestViewSet(viewsets.ModelViewSet):
             if len(words) > 10:
                 return Response({'error': 'Maximum number of words is 10'}, status=status.HTTP_400_BAD_REQUEST)
                 
-            
-
-            
             start_time = datetime.strptime(start_time_str, '%Y-%m-%dT%H:%M:%S')
             end_time = start_time + timedelta(minutes=duration)
             data['start_time'] = start_time
@@ -159,20 +156,21 @@ class ContestViewSet(viewsets.ModelViewSet):
         if not is_valid_word(guess_text):
             return Response({'error': "I'm sorry, I don't know this word."}, status=status.HTTP_404_NOT_FOUND)
 
+        
         try:
-            if response["correct"]:
-                score_recorded = increment_score(user, word)
-                channel_layer = get_channel_layer()
-                if channel_layer is None:
-                    return Response({'error': "Channel layer is not configured"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-                standings = get_standings(contest, 1, 50)
-                async_to_sync(channel_layer.group_send)(
-                    f'standings_{contest}',
-                    {
-                        'type': 'send_standings',
-                        'standings': standings
-                    }
-                )
+            # if response["correct"]:
+            # score_recorded = increment_score(user, word)
+            channel_layer = get_channel_layer()
+            if channel_layer is None:
+                return Response({'error': "Channel layer is not configured"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            standings = get_standings(contest, 1, 50)
+            async_to_sync(channel_layer.group_send)(
+                f'standings_{contest}',
+                {
+                    'type': 'send_standings',
+                    'standings': standings
+                }
+            )
             return Response(response, status=status.HTTP_200_OK)
         except:
             return Response({"error": "Couldn't update score."}, status=status.HTTP_400_BAD_REQUEST)
