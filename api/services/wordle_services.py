@@ -5,6 +5,7 @@ from api.usecases.get_standings import get_standings_usecase
 from api.usecases.get_words import get_words_usecase
 from api.usecases.get_my_contests import get_my_contests_usecase
 from api.usecases.get_contest_word_guesses import get_contest_word_guesses_usecase
+from api.usecases.create_words import bulk_create_usecase
 
 def process_word_guess(guess_text, word_id, contest_id, user_id):
     return process_word_guess_usecase(guess_text, word_id, contest_id, user_id)
@@ -26,4 +27,6 @@ def get_my_contests(user):
 
 def get_contest_word_guesses(contest_id, user_id, word_id):
     return get_contest_word_guesses_usecase(contest_id, user_id, word_id)
-    
+
+def create_words(words):
+    return bulk_create_usecase(words)

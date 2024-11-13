@@ -18,3 +18,10 @@ def get_words_by_contest_id(contest_id):
     
     except Word.DoesNotExist:
         return None
+
+def bulk_create(word_objects):
+    try:
+        return Word.objects.bulk_create(word_objects)
+    except:
+        return None
+        

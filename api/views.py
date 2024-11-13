@@ -7,13 +7,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from collections import defaultdict
-from api.services.wordle_services import process_word_guess, increment_score, register_participant, get_standings, get_words, get_my_contests, get_contest_word_guesses
+from api.services.wordle_services import process_word_guess, increment_score, register_participant, get_standings, get_words, get_my_contests, get_contest_word_guesses, create_words
 from channels.layers import get_channel_layer
 from django.conf import settings
 from asgiref.sync import async_to_sync
 from api.usecases.get_standings import get_standings_usecase
 from api.utils.word_check import is_valid_word
-
+from datetime import datetime, timedelta
 
 class WordViewSet(viewsets.ModelViewSet):
     queryset = Word.objects.all()
@@ -30,24 +30,54 @@ class ContestViewSet(viewsets.ModelViewSet):
             data['creator'] = request.user.id
             title = data['title']
             description = data['description']
-            start_time = data['start_time']
+            start_time_str = data['start_time']
             duration = data['duration']
-            contest_availability = data['contest_availability']
+            # contest_availability = data['contest_availability']
             words = data['words']
+            if len(words) > 10:
+                return Response({'error': 'Maximum number of words is 10'}, status=status.HTTP_400_BAD_REQUEST)
+                
             
 
-
-            # word_objects = [Word(word=word) for word in words]
-            # Word.objects.bulk_create(word_objects)
-
-            print(words, data['creator'])
-            return Response( status=status.HTTP_201_CREATED, headers=headers)
+            
+            start_time = datetime.strptime(start_time_str, '%Y-%m-%dT%H:%M:%S')
+            end_time = start_time + timedelta(minutes=duration)
+            data['start_time'] = start_time
+            data['end_time'] = end_time
+            data.pop('duration')
+            # print(1, data)
             serializer = self.get_serializer(data=data)
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
-
+            # print(2, serializer.data)
             headers = self.get_success_headers(serializer.data)
-            if data['contest_availability'] == 'PRIVATE':
+            # get the id of the contest created
+            try :
+                contest = serializer.instance
+            except Exception as e:
+                print(e)
+                return Response({'error': 'Contest not created'}, status=status.HTTP_400_BAD_REQUEST)
+            # contest = serializer.instance.id
+            # create words for the contest
+            # print(3, words, contest)
+
+            word_objects = []
+            for i, word in enumerate(words):
+                # print(i, word, contest, chr(ord('A') + i))
+                if len(word) != 5:
+                    return Response({'error': 'Word must be 5 letters long'}, status=status.HTTP_400_BAD_REQUEST)
+                if word.isalpha() == False:
+                    return Response({'error': 'Word must contain only letters'}, status=status.HTTP_400_BAD_REQUEST)
+                try:
+                    word_objects.append(Word(word_text=word, contest=contest, word_position=chr(ord('A') + i)))
+                except Exception as e:
+                    print(e)
+                    return Response({'error': 'Word not created'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # print(4, word_objects)
+            create_words(word_objects)
+            # print(5, 'words created')
+            if data.get('contest_availability', '') == 'PRIVATE':
                 invitation_code = InvitationCode.objects.create(contest=serializer.instance)
                 invitation_code_serializer = InvitationCodeSerializer(invitation_code)
 
