@@ -131,9 +131,9 @@ class ContestViewSet(viewsets.ModelViewSet):
         except Contest.DoesNotExist:
             return Response({'error': 'Contest does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
-        # curr_time = timezone.now()
-        # if contest_instance.start_time > curr_time or contest_instance.end_time < curr_time:
-        #     return Response({'error': 'Contest is not active'}, status=status.HTTP_400_BAD_REQUEST)
+        curr_time = timezone.now()
+        if contest_instance.start_time > curr_time or contest_instance.end_time < curr_time:
+            return Response({'error': 'Contest is not active'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
             guess_text = request.data.get('guess_text', '').upper()

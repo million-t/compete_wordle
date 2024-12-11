@@ -74,3 +74,21 @@ class ContestParticipant(models.Model):
 
     def __str__(self):
         return f"{self.user.username} in {self.contest.title} with score: {self.score}"
+
+
+class Leaderboard(models.Model):
+    contest = models.ForeignKey(Contest, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    word = models.ForeignKey(Word, on_delete=models.CASCADE)
+    trials = models.IntegerField(default=0)
+    score = models.IntegerField(default=0)
+    rank = models.IntegerField()
+
+    class Meta:
+        unique_together = ('contest', 'user', 'word')
+        indexes = [
+            models.Index(fields=['contest', 'word', '-score']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} in {self.contest.title} for word {self.word.word_text} with score: {self.score} and rank: {self.rank}"
